@@ -1,0 +1,63 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "NOBI: Bridge (debug)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/nobi_bridge.py",
+      "args": [
+        "--duration",
+        "0"
+      ],
+      "cwd": "${workspaceFolder}",
+      "python": "${workspaceFolder}/_runtime/python/python.exe",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "NOBI: Engine run.py (debug)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/run.py",
+      "args": [
+        "--duration",
+        "0",
+        "--out",
+        "${workspaceFolder}/../crypto-clob-ui/data-ui"
+      ],
+      "cwd": "${workspaceFolder}",
+      "python": "${workspaceFolder}/_runtime/python/python.exe",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "NOBI: UI server (debug)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/../crypto-clob-ui/ui_server.py",
+      "args": [
+        "--duration",
+        "0"
+      ],
+      "cwd": "${workspaceFolder}/../crypto-clob-ui",
+      "python": "${workspaceFolder}/_runtime/python/python.exe",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "NOBI: Brain server (debug)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/ai/brain_server.py",
+      "args": [
+        "--port",
+        "8090"
+      ],
+      "cwd": "${workspaceFolder}",
+      "python": "${workspaceFolder}/_runtime/python/python.exe",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}

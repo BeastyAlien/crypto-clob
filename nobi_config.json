@@ -1,0 +1,10 @@
+{
+    "metrics_dir": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\crypto-clob-ui\\data-ui",
+    "signal_file": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\nobi_signal.sig",
+    "anchor_file": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\D0E8209F77C8CF37AD8BF550E51FF075\\MQL5\\Files\\nobi_anchor.sig",
+    "ofi_column": "ofi_total",
+    "epoch_sec": 300,
+    "min_abs": 25.0,
+    "poll_sec": 2.0,
+    "log_level": "INFO"
+}

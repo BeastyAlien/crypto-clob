@@ -1,0 +1,49 @@
+; NobiScalpTrader - portable preset reproducing the LIVE config that placed ticket 3220153450
+; SELL 0.10 BTCUSDm @ 77326.46 on 2026-09-12 (serial 1440), magic 77812, vol 0.10, SL 0, TP 0
+; Reconstructed from the 09-12 expert journal (EA loaded 13:44, PICKACHU/REGIME gate lines,
+; momentum-gate blocks, heartbeat/alert/trade-log output) and the saved NoSL capture.
+; Load in the EA properties (Load button) or drop into MQL5\Profiles\Tester for backtests.
+InpMagic=77812
+InpSignalFile=nobi_signal.sig
+InpPollMs=200
+InpEnableTrading=true
+InpVolume=0.10
+InpSLPoints=0
+InpTPPoints=0
+InpMaxSlip=30
+InpLogSignals=true
+InpDrawMarkers=true
+InpMaxMarkers=200
+InpUseAlert=true
+InpHeartbeat=true
+InpHeartbeatSec=30
+InpUseCommon=false
+InpStaleMinutes=55
+InpTestReplayFile=
+InpBEProfitPts=0
+InpTrailPts=0
+InpReentryFast=true
+InpReentryDelay=0
+InpShowAIInsight=false
+InpAIInsightFile=ai_insight.txt
+InpAIInsightSec=60
+InpShowPickachu=false
+InpPickachuFile=pickachu_decision.txt
+InpPickachuSec=60
+InpTradeLog=true
+InpAutoPickachu=false
+InpCommandFile=pickachu_command.txt
+InpCmdCheckSec=10
+InpAllowNoSL=true
+InpMomentumGate=true
+InpMomentumFile=nobi_metrics.sig
+InpMomentumExpand=1.2
+InpMomentumCVD=0.02
+InpMomentumMinSnap=3
+InpConvictionMin=0.70
+InpThrAdaptive=true
+InpThrFloor=0.35
+InpThrCap=0.85
+InpRegimeGate=false
+InpRegimeTF=5
+InpGateHold=true

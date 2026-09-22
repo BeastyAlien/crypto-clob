@@ -1,0 +1,33 @@
+{
+  "symbol": "BTC-USD",
+  "tick_size": 1.0,
+  "nobi_levels": 10,
+  "heatmap_rows": 10,
+  "cvd_window_sec": 300,
+  "aggression_window_sec": 60,
+  "sweep_window_ms": 150,
+  "sweep_min_venues": 2,
+  "sweep_min_trades": 3,
+  "sweep_min_qty": 2.0,
+  "iceberg_ratio": 1.5,
+  "iceberg_lookback_sec": 5,
+  "spoof_min_notional_usd": 1000000.0,
+  "spoof_min_ticks_from_mid": 10,
+  "spoof_max_lifetime_ms": 2000,
+  "absorb_max_move_usd": 5.0,
+  "absorb_min_cvd_qty": 30.0,
+  "absorb_window_sec": 10,
+  "leadlag_win_ms": 75,
+  "spread_div_z": 2.0,
+  "summary_interval_sec": 2.0,
+  "exchanges": ["binance", "bybit", "okx", "kraken", "coinbase", "bitstamp", "bitfinex"],
+  "symbols": {
+    "binance": "btcusdt",
+    "bybit": "BTCUSDT",
+    "okx": "BTC-USDT",
+    "kraken": "XBT/USD",
+    "coinbase": "BTC-USD",
+    "bitstamp": "btcusd",
+    "bitfinex": "tBTCUSD"
+  }
+}

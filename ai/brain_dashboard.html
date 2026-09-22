@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOBI Brain Console</title>
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#12161f; --line:#1e2533; --txt:#d7e0ef; --dim:#7b869c;
+    --accent:#4dd0e1; --green:#2ee6a8; --red:#ff5c6c; --yellow:#ffd166; --blue:#5b8cff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 "Segoe UI",system-ui,sans-serif}
+  header{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#10141d,#0b0e14);position:sticky;top:0;z-index:5}
+  header h1{font-size:17px;margin:0;font-weight:600;letter-spacing:.5px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .dot.lag{background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+  .dot.err{background:var(--red);box-shadow:0 0 8px var(--red)}
+  .clock{margin-left:auto;color:var(--dim);font-variant-numeric:tabular-nums}
+  main{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;padding:16px 20px}
+  .card{grid-column:span 4;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+  .card.wide{grid-column:span 6}
+  .card.full{grid-column:span 12}
+  .card h2{margin:0 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--accent)}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+  .kv b{color:var(--dim);font-weight:500;font-size:12.5px}
+  .kv span{font-variant-numeric:tabular-nums;text-align:right;word-break:break-word}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
+  .pill.trend{background:#073a2e;color:var(--green)}
+  .pill.revert{background:#3a2607;color:var(--yellow)}
+  .pill.chop{background:#24304a;color:var(--blue)}
+  .big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+  .level{font-size:16px;font-weight:700;text-transform:capitalize}
+  .bar{height:8px;border-radius:4px;background:#1a2231;overflow:hidden;margin-top:6px}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--green))}
+  .sig{display:flex;align-items:center;gap:12px;font-variant-numeric:tabular-nums}
+  .sig .side{font-size:22px;font-weight:800}
+  .side.BUY{color:var(--green)} .side.SELL{color:var(--red)} .side.HOLD{color:var(--yellow)}
+  pre.feed{white-space:pre-wrap;word-break:break-word;font:12.5px/1.5 Consolas,monospace;color:#a8d8ea;
+    background:#0d1119;border:1px solid var(--line);border-radius:8px;padding:12px;max-height:420px;overflow:auto;margin:0}
+  pre.report{white-space:pre-wrap;word-break:break-word;font:12.5px/1.5 Consolas,monospace;color:var(--txt);
+    background:#0d1119;border:1px solid var(--line);border-radius:8px;padding:12px;max-height:340px;overflow:auto;margin:0}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{text-align:right;padding:5px 8px;border-bottom:1px solid var(--line);font-size:12.5px}
+  th{color:var(--dim);font-weight:500} td:first-child,th:first-child{text-align:left}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+  .muted{color:var(--dim);font-size:12px}
+  .fade{opacity:.55}
+  @media(max-width:1100px){.card,.card.wide{grid-column:span 6}.card.full{grid-column:span 12}}
+  @media(max-width:760px){.card,.card.wide,.card.full{grid-column:span 12}}
+</style>
+</head>
+<body>
+<header>
+  <div class="dot" id="dot"></div>
+  <h1>NOBI BRAIN CONSOLE</h1>
+  <span class="muted">self-improving OFI strategy · bridge data learning loop</span>
+  <span class="clock" id="clock">--:--:--</span>
+</header>
+<main>
+  <!-- maturity -->
+  <div class="card">
+    <h2>Maturity</h2>
+    <div class="kv">
+      <b>Level</b><span class="level" id="level">—</span>
+      <b>Edge (0..1)</b><span id="edge">—</span>
+      <b>Epochs analyzed</b><span id="epochs">—</span>
+      <b>Trades analyzed</b><span id="trades">—</b></span>
+      <b>Thinks</b><span id="thinks">—</span>
+      <b>Collects</b><span id="collects">—</span>
+      <b>Dataset rows</b><span id="drows">—</span>
+      <b>Rows ingested</b><span id="ingested">—</span>
+    </div>
+    <div class="bar"><i id="edgebar" style="width:0%"></i></div>
+  </div>
+
+  <!-- regime -->
+  <div class="card">
+    <h2>Market regime</h2>
+    <div class="kv">
+      <b>Regime</b><span id="regime">—</span>
+      <b>Hurst R/S</b><span id="hurst">—</span>
+      <b>|ΔCVD| vol cluster</b><span id="volcl">—</span>
+      <b>OFI autocorr l1</b><span id="ofiac">—</span>
+      <b>Mid samples</b><span id="nmids">—</span>
+      <b>Decision</b><span id="decision">—</span>
+    </div>
+  </div>
+
+  <!-- live signal -->
+  <div class="card">
+    <h2>Live signal &amp; feed</h2>
+    <div class="sig">
+      <span class="side" id="side">—</span>
+      <span id="sigmeta" class="muted">—</span>
+    </div>
+    <div class="kv" style="margin-top:10px">
+      <b>Serial</b><span id="serial">—</span>
+      <b>Epoch OFI Δ</b><span id="ofidel">—</span>
+      <b>Live OFI total</b><span id="liveofi">—</span>
+      <b>Live CVD</b><span id="livecvd">—</span>
+      <b>Mid (bid/ask)</b><span id="mid">—</span>
+      <b>Venues streaming</b><span id="venues">—</span>
+      <b>Metrics file</b><span id="mfile" class="muted">—</span>
+    </div>
+  </div>
+
+  <!-- bridge settings -->
+  <div class="card">
+    <h2>Settings · bridge</h2>
+    <div class="kv">
+      <b>epoch_sec</b><span id="epoch">—</span>
+      <b>min_abs</b><span id="minabs">—</span>
+      <b>venue_min</b><span id="venmin">—</span>
+    </div>
+    <h2 style="margin-top:14px">Settings · EA (review only)</h2>
+    <div class="kv">
+      <b>TP</b><span id="ea_tp">—</span>
+      <b>Trail</b><span id="ea_trail">—</span>
+      <b>BE</b><span id="ea_be">—</span>
+      <b>SL</b><span id="ea_sl">—</span>
+    </div>
+  </div>
+
+  <!-- thoughts -->
+  <div class="card full">
+    <h2>Thoughts <span class="muted" style="text-transform:none">— latest first, appended each think</span></h2>
+    <pre class="feed" id="thoughts">collecting…</pre>
+  </div>
+
+  <!-- grid candidates -->
+  <div class="card wide">
+    <h2>Top grid candidates <span class="muted" style="text-transform:none">epoch_s × min_abs × venue_min</span></h2>
+    <table id="trials">
+      <tr><th>config</th><th>n</th><th>win%</th><th>exp USD</th><th>score</th></tr>
+      <tr><td colspan="5" class="muted">no trials yet</td></tr>
+    </table>
+  </div>
+
+  <!-- report -->
+  <div class="card wide">
+    <h2>Latest think report</h2>
+    <pre class="report" id="report">—</pre>
+  </div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const FMT=new Intl.NumberFormat('en-US');
+function fmtNum(x,d){ if(x==null||x===''||isNaN(x)) return '—'; return Number(x).toLocaleString('en-US',{maximumFractionDigits:d??0}); }
+function poll(){
+  fetch('/api/all',{cache:'no-store'})
+    .then(r=>r.json())
+    .then(render)
+    .catch(()=>{ $('dot').className='dot err'; });
+}
+function render(d){
+  $('dot').className='dot';
+  $('clock').textContent=d.now_utc;
+  const st=d.state||{}, m=st.maturity||{}, rg=(st.regimes||[]).slice(-1)[0]||{};
+  $('level').textContent=m.level||'—';
+  $('edge').textContent=(m.edge!=null)?fmtNum(m.edge,3):'—';
+  $('edgebar').style.width=((m.edge||0)*100)+'%';
+  $('epochs').textContent=FMT.format(m.epochs_seen??0);
+  $('trades').textContent=FMT.format(m.trades_analyzed??0);
+  $('thinks').textContent=FMT.format(st.thinks??0);
+  $('collects').textContent=FMT.format(st.collects??0);
+  $('drows').textContent=FMT.format(d.dataset?.rows??0);
+  $('ingested').textContent=FMT.format(st.rows??0);
+
+  const reg=rg.regime||'—';
+  $('regime').innerHTML=`<span class="pill ${reg}">${reg}</span>`;
+  $('hurst').textContent=(rg.h!=null)?fmtNum(rg.h,3):'—';
+  $('volcl').textContent=(rg.vol_cluster!=null)?fmtNum(rg.vol_cluster,3):'—';
+  $('ofiac').textContent=(rg.ofi_ac1!=null)?fmtNum(rg.ofi_ac1,3):'—';
+  $('nmids').textContent=FMT.format(rg.n_mid??0);
+
+  const rec=d.recommended||{};
+  $('decision').textContent=(rec.decision||'—').toUpperCase();
+  const bc=rec.bridge||{};
+  $('epoch').textContent=bc.epoch_sec??'—';
+  $('minabs').textContent=bc.min_abs??'—';
+  $('venmin').textContent=bc.venue_min??'—';
+  const ea=rec.ea||{};
+  $('ea_tp').textContent=ea.tp_usd??'—'; $('ea_trail').textContent=ea.trail_usd??'—';
+  $('ea_be').textContent=ea.be_usd??'—'; $('ea_sl').textContent=ea.sl_usd??'—';
+
+  const s=d.signal||{}, mx=d.metrics||{};
+  const side=s.side||'HOLD';
+  $('side').textContent=side; $('side').className='side '+side;
+  $('sigmeta').textContent=(s.time?('since '+s.time):'no signal yet');
+  $('serial').textContent=s.serial||'—';
+  const pv=parseFloat(s.prev), nw=parseFloat(s.now);
+  $('ofidel').innerHTML=(isNaN(pv)||isNaN(nw))?'—':`${fmtNum(nw,2)} <span class="muted">(prev ${fmtNum(pv,2)})</span>`;
+  $('liveofi').textContent=fmtNum(mx.ofi,2);
+  $('livecvd').textContent=fmtNum(mx.cvd,4);
+  $('mid').textContent=(mx.bid||mx.ask)?`${fmtNum(mx.bid)} / ${fmtNum(mx.ask)}`:'—';
+  $('venues').textContent=mx.n_venues??'—';
+  $('mfile').textContent=(mx.file||'—')+(mx.size?(' · '+fmtNum(mx.size/1024,0)+' KB'):'');
+
+  const th=(d.thoughts||[]).slice().reverse();
+  $('thoughts').textContent=th.length?th.join('\n'):'no thoughts yet — first think writes here';
+
+  const trials=(st.trials||[]).slice(-8).reverse();
+  const tb=$('trials');
+  if(trials.length){
+    tb.innerHTML='<tr><th>config</th><th>n</th><th>win%</th><th>exp USD</th><th>score</th></tr>'+
+      trials.map(t=>`<tr>
+        <td>e${t.cfg.epoch_sec}/m${t.cfg.min_abs}/v${t.cfg.venue_min}</td>
+        <td>${t.n}</td><td>${(t.win_rate*100).toFixed(1)}%</td>
+        <td class="${t.expectancy>0?'pos':'neg'}">${t.expectancy>0?'+':''}${t.expectancy}</td>
+        <td>${fmtNum(t.score,0)}</td></tr>`).join('');
+  } else {
+    tb.innerHTML='<tr><th>config</th><th>n</th><th>win%</th><th>exp USD</th><th>score</th></tr><tr><td colspan="5" class="muted">no trials yet</td></tr>';
+  }
+  $('report').textContent=d.report||'—';
+}
+poll();
+setInterval(poll,5000);
+</script>
+</body>
+</html>

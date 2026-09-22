@@ -1,0 +1,51 @@
+; NobiScalpTrader - gate-off preset = yesterday's LIVE config + MomentumGate disabled
+; Same inputs as NobiScalpTrader_YESTERDAY except InpMomentumGate=false.
+; Reason: nobi_metrics.sig has been frozen since 2026-09-13 11:19:27 UTC, so the
+; momentum gate stays in "warm-up" forever and blocks every entry (SELL #1576/#1578
+; blocked at 23:00/23:01 on 09-13). With the gate off, signals trade directly.
+; vol 0.10, SL 0, TP 0, magic 77812, AllowNoSL on - runs unprotected, as before.
+; Load in the EA properties (Load button) or drop into MQL5\Profiles\Tester for backtests.
+InpMagic=77812
+InpSignalFile=nobi_signal.sig
+InpPollMs=1000
+InpEnableTrading=true
+InpVolume=0.10
+InpSLPoints=0
+InpTPPoints=0
+InpMaxSlip=30
+InpLogSignals=true
+InpDrawMarkers=true
+InpMaxMarkers=200
+InpUseAlert=true
+InpHeartbeat=true
+InpHeartbeatSec=30
+InpUseCommon=false
+InpStaleMinutes=55
+InpTestReplayFile=
+InpBEProfitPts=0
+InpTrailPts=0
+InpReentryFast=true
+InpReentryDelay=0
+InpShowAIInsight=false
+InpAIInsightFile=ai_insight.txt
+InpAIInsightSec=60
+InpShowPickachu=false
+InpPickachuFile=pickachu_decision.txt
+InpPickachuSec=60
+InpTradeLog=true
+InpAutoPickachu=false
+InpCommandFile=pickachu_command.txt
+InpCmdCheckSec=10
+InpAllowNoSL=true
+InpMomentumGate=false
+InpMomentumFile=nobi_metrics.sig
+InpMomentumExpand=1.2
+InpMomentumCVD=0.02
+InpMomentumMinSnap=3
+InpConvictionMin=0.70
+InpThrAdaptive=true
+InpThrFloor=0.35
+InpThrCap=0.85
+InpRegimeGate=false
+InpRegimeTF=5
+InpGateHold=true

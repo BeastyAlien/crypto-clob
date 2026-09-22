@@ -1,0 +1,23 @@
+; NobiScalpTrader v2.10 - canonical settings (loadable in MT5)
+; saved 2026-09-08
+InpMagic=77812
+InpSignalFile=nobi_signal.sig
+InpPollMs=1000
+InpEnableTrading=true
+InpVolume=0.01
+InpSLPoints=10000.0
+InpTPPoints=30000.0
+InpMaxSlip=30
+InpLogSignals=true
+InpDrawMarkers=true
+InpMaxMarkers=200
+InpUseAlert=true
+InpHeartbeat=true
+InpHeartbeatSec=30
+InpUseCommon=false
+InpStaleMinutes=55
+InpTestReplayFile=
+InpBEProfitPts=150.0
+InpTrailPts=120.0
+InpReentryFast=true
+InpReentryDelay=30

@@ -1,0 +1,38 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- Bundled runtime + packaged artifacts ----
+_runtime/
+dist/
+build/
+*.spec.bak
+
+# ---- Logs ----
+*.log
+*.err.log
+*.out.log
+
+# ---- AI/brain runtime state (regenerated constantly) ----
+ai/dataset.csv
+ai/state.json
+ai/emotion_state.json
+ai/recommended.json
+ai/recommended_v2.json
+ai/thoughts.log
+ai/think.log
+ai/emotions.log
+ai/emotion_task.log
+ai/report_latest.txt
+ai/replay_v2_report.txt
+
+# ---- OS ----
+Thumbs.db
+.DS_Store
+
+# ---- Notebooks / scratch ----
+scratch/
+tmp/
