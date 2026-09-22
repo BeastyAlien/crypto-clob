@@ -30,7 +30,7 @@ MIN_SIGNALS = 8           # min trades for a config to be considered
 
 GRID_EPOCH = [60, 90, 120, 180, 240, 300, 400, 600, 900]
 GRID_MINABS = [10, 15, 25, 35, 50, 75, 100, 150, 200]
-GRID_VENUE = [0]
+GRID_VENUE = [0, 2]
 GRID_CONF = [0, 1, 2]                   # 0=none, 1=cvd-confirm, 2=cvd+book-imbalance
 # exit profiles: (tp_usd, sl_usd, trail_usd, be_usd) per 1 BTC; 0 = disabled
 GRID_EXITS = [
