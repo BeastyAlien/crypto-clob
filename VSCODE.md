@@ -68,3 +68,21 @@ Run, debug and version the whole NOBI pipeline from VS Code.
    git merge feature/xyz
    ```
 6. **Never commit:** `_runtime\`, `dist\`, `ai\dataset.csv`, `*.log` — already covered by `.gitignore`.
+
+## Releases & versions
+
+| File | Role |
+|---|---|
+| `VERSION` | Current version + build date/time + source commit |
+| `RELEASES.md` | Changelog of every tagged version |
+| `bump_release.py` | One-command bumper (see below) |
+
+Stamp the next version (adds date+time, commits, tags `vX.Y`, pushes to GitHub):
+
+```bat
+_runtime\python\python.exe bump_release.py --note "short summary"
+```
+
+- `--inc major|minor|patch` chooses the level (default `minor`: v1.0 → v1.1).
+- Every tag is a **fallback point**: `git switch -c hotfix/v1.0 v1.0`.
+- Tags are pushed automatically; use `--no-push` to keep it local.
