@@ -2,17 +2,21 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "NOBI: Watchdog (supervise.py)",
+      "type": "shell",
+      "command": "${workspaceFolder}/_runtime/python/python.exe",
+      "args": ["${workspaceFolder}/supervise.py"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
       "label": "NOBI: Bridge (nobi_bridge.py)",
       "type": "shell",
       "command": "${workspaceFolder}/_runtime/python/python.exe",
-      "args": [
-        "${workspaceFolder}/nobi_bridge.py",
-        "--duration",
-        "0"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
+      "args": ["${workspaceFolder}/nobi_bridge.py", "--duration", "0"],
+      "options": { "cwd": "${workspaceFolder}" },
       "isBackground": true,
       "problemMatcher": []
     },
@@ -20,16 +24,8 @@
       "label": "NOBI: Engine (run.py)",
       "type": "shell",
       "command": "${workspaceFolder}/_runtime/python/python.exe",
-      "args": [
-        "${workspaceFolder}/run.py",
-        "--duration",
-        "0",
-        "--out",
-        "${workspaceFolder}/../crypto-clob-ui/data-ui"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
+      "args": ["${workspaceFolder}/run.py", "--duration", "0", "--out", "${workspaceFolder}/../crypto-clob-ui/data-ui"],
+      "options": { "cwd": "${workspaceFolder}" },
       "isBackground": true,
       "problemMatcher": []
     },
@@ -37,14 +33,8 @@
       "label": "NOBI: UI server (ui_server.py)",
       "type": "shell",
       "command": "${workspaceFolder}/_runtime/python/python.exe",
-      "args": [
-        "${workspaceFolder}/../crypto-clob-ui/ui_server.py",
-        "--duration",
-        "0"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}/../crypto-clob-ui"
-      },
+      "args": ["${workspaceFolder}/../crypto-clob-ui/ui_server.py", "--duration", "0"],
+      "options": { "cwd": "${workspaceFolder}/../crypto-clob-ui" },
       "isBackground": true,
       "problemMatcher": []
     },
@@ -52,30 +42,9 @@
       "label": "NOBI: Brain server (brain_server.py)",
       "type": "shell",
       "command": "${workspaceFolder}/_runtime/python/python.exe",
-      "args": [
-        "${workspaceFolder}/ai/brain_server.py",
-        "--port",
-        "8090"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
+      "args": ["${workspaceFolder}/ai/brain_server.py", "--port", "8090"],
+      "options": { "cwd": "${workspaceFolder}" },
       "isBackground": true,
-      "problemMatcher": []
-    },
-    {
-      "label": "NOBI: Start All",
-      "dependsOn": [
-        "NOBI: Bridge (nobi_bridge.py)",
-        "NOBI: Engine (run.py)",
-        "NOBI: UI server (ui_server.py)",
-        "NOBI: Brain server (brain_server.py)"
-      ],
-      "dependsOrder": "parallel",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
       "problemMatcher": []
     }
   ]
