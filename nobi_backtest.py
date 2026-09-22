@@ -28,8 +28,8 @@ RECO = AI_DIR / "recommended_v2.json"
 GAP_MS = 120_000          # data hole: stops excursion tracking (same as nobi_ai)
 MIN_SIGNALS = 8           # min trades for a config to be considered
 
-GRID_EPOCH = [60, 120, 180, 300, 600]
-GRID_MINABS = [10, 25, 50, 100]
+GRID_EPOCH = [60, 90, 120, 180, 240, 300, 400, 600, 900]
+GRID_MINABS = [10, 15, 25, 35, 50, 75, 100, 150, 200]
 GRID_VENUE = [0]
 GRID_CONF = [0, 1, 2]                   # 0=none, 1=cvd-confirm, 2=cvd+book-imbalance
 # exit profiles: (tp_usd, sl_usd, trail_usd, be_usd) per 1 BTC; 0 = disabled
@@ -41,6 +41,8 @@ GRID_EXITS = [
     (40, 120, 30, 25),                   # tight TP, roomy SL
     (120, 60, 60, 40),                   # let winners run + trail
     (200, 100, 100, 60),                 # swing-ish within 10-min epochs
+    (240, 490, 390, 240),                # AI candidate (per 1 BTC) - milder
+    (480, 980, 780, 480),                # AI #20: TP48/SL98/trail78/BE48 per 0.10 lot
 ]
 
 # ------------------------------------------------------------- helpers ----
