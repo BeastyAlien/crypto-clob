@@ -16,6 +16,11 @@ build/
 *.err.log
 *.out.log
 
+# ---- Secrets ----
+.env
+*.env
+data_bento/.env
+
 # ---- AI/brain runtime state (regenerated constantly) ----
 ai/dataset.csv
 ai/state.json
@@ -36,3 +41,6 @@ Thumbs.db
 # ---- Notebooks / scratch ----
 scratch/
 tmp/
+
+# ---- Backup snapshots ----
+Backup/

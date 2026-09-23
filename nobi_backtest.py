@@ -200,7 +200,17 @@ def replay_cfg(rows: list[dict], epoch_sec: float, min_abs: float,
             events.append((i, t, "SELL"))
             events.append((i, t, "SELL"))
     if len(events) < 2:
-        return {"n": 0}
+        return {
+            "n": 0,
+            "win_rate": 0.0,
+            "expectancy": 0.0,
+            "total_pnl": 0.0,
+            "pf": 0.0,
+            "max_dd": 0.0,
+            "avg_hold_min": 0.0,
+            "exits": {c: 0 for c in ("HH", "TP", "SL", "TR", "BE")},
+            "by_regime": {},
+        }
 
     trades = []
     for k in range(len(events) - 1):
@@ -374,13 +384,14 @@ def main() -> int:
         s = t["stats"]
         if s["n"] < MIN_SIGNALS:
             continue
-        pf_tag = " PF>2 !!" if s["pf"] >= min_pf and min_pf > 0 else ""
+        pf_val = s.get("pf", 0.0)
+        pf_tag = " PF>2 !!" if pf_val >= min_pf and min_pf > 0 else ""
         L.append(
             f"e{t['cfg']['epoch_sec']:>3}s m{int(t['cfg']['min_abs']):>3} "
             f"tp{int(t['cfg']['tp_usd']):>4} sl{int(t['cfg']['sl_usd']):>4} "
             f"tr{int(t['cfg']['trail_usd']):>4} be{int(t['cfg']['be_usd']):>4} c{t['cfg'].get('conf',0)} | "
             f"n={s['n']:>3} wr={s['win_rate']:.1%} exp={s['expectancy']:+.1f} "
-            f"PF={s['pf']:.2f} total={s['total_pnl']:+.0f} mdd={s['max_dd']:.0f} "
+            f"PF={pf_val:.2f} total={s['total_pnl']:+.0f} mdd={s['max_dd']:.0f} "
             f"hold={s['avg_hold_min']:.1f}m ex={s['exits']}{pf_tag}"
         )
     L.append("")
@@ -395,16 +406,17 @@ def main() -> int:
                 best = (br["expectancy"] * math.sqrt(br["n"]), t, br)
         if best:
             _, t, br = best
+            pf_val = br.get("pf", 0.0)
             L.append(
                 f"{reg:>6}: e{t['cfg']['epoch_sec']:>3}s m{int(t['cfg']['min_abs']):>3} "
                 f"tp{int(t['cfg']['tp_usd']):>4} sl{int(t['cfg']['sl_usd']):>4} "
                 f"tr{int(t['cfg']['trail_usd']):>4} be{int(t['cfg']['be_usd']):>4} c{t['cfg'].get('conf',0)} | "
                 f"n={br['n']:>3} wr={br['win_rate']:.1%} exp={br['expectancy']:+.1f} "
-                f"PF={br['pf']:.2f}"
+                f"PF={pf_val:.2f}"
             )
     L.append("")
     L.append("===== CONFIGS WITH PF >= %.1f (min 8 trades) =====" % max(min_pf, 2.0))
-    hits = [t for t in results if t["stats"]["pf"] >= max(min_pf, 2.0) and t["stats"]["n"] >= MIN_SIGNALS]
+    hits = [t for t in results if t["stats"].get("pf", 0.0) >= max(min_pf, 2.0) and t["stats"]["n"] >= MIN_SIGNALS]
     if not hits:
         L.append("none - widen the grid or gather more data")
     for t in hits[:15]:

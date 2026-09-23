@@ -61,26 +61,67 @@ def now_iso() -> str:
 
 
 class MetricsTailer:
-    """Follows the newest metrics_*.jsonl in a directory (engine writes these)."""
+    """Follows metrics_*.jsonl in a directory with a sticky single-stream lock.
+
+    The engine writes one timestamped metrics_<start>.jsonl per start and
+    rotates finished runs to `.bak`; a stale/duplicate engine can leave a
+    second *live* file behind. Picking "newest by mtime" on every poll made
+    the bridge flip between streams whenever the other one got a write - each
+    flip reset the read offset and re-entered the OFI blackout window, which
+    is the silent-bridge flap. We therefore lock onto one stream:
+
+      1. A `metrics_stream` pin (literal file name, from nobi_config.json)
+         hard-locks the tail; when the pinned file is missing we tail nothing
+         (no guessing).
+      2. Otherwise the current stream is kept while it is alive (modified
+         within ROTATE_GRACE_S). A second live file may grow forever next to
+         it - we never hop over to it.
+      3. We switch only on rotation - current file gone or idle beyond
+         ROTATE_GRACE_S - to the strict-newest non-empty candidate.
+    """
 
     MAX_LINE_BYTES = 2_000_000   # skip pathological lines (corrupt/huge dumps)
+    ROTATE_GRACE_S = 15.0        # stream idle this long before we treat it as rotated
 
-    def __init__(self, metrics_dir: str):
+    def __init__(self, metrics_dir: str, stream_pin: str = ""):
         self.dir = Path(metrics_dir)
+        self.stream_pin = stream_pin.strip()
         self.path = None
         self.offset = 0
         self.carry = ""
 
-    def _newest(self):
+    @staticmethod
+    def _mtime(f: Path) -> float:
+        try:
+            return f.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    @staticmethod
+    def _size(f: Path) -> int:
+        try:
+            return f.stat().st_size
+        except OSError:
+            return 0
+
+    def _select(self):
+        """Choose the stream to tail now (sticky lock, rotation-only switch)."""
         files = [f for f in self.dir.glob("metrics_*.jsonl") if f.is_file()]
         if not files:
             return None
-        nonempty = [f for f in files if f.stat().st_size > 0]
-        pool = nonempty or files
-        return max(pool, key=lambda f: f.stat().st_mtime)
+        pin = self.stream_pin
+        if pin:
+            wanted = self.dir / pin
+            return wanted if wanted in files else None
+        now = time.time()
+        if self.path is not None:                          # sticky: never hop while alive
+            if self.path in files and now - self._mtime(self.path) <= self.ROTATE_GRACE_S:
+                return self.path
+        nonempty = [f for f in files if self._size(f) > 0] # rotation or first run:
+        return max(nonempty or files, key=self._mtime)
 
     def rows(self) -> list:
-        path = self._newest()
+        path = self._select()
         if path is None:
             return []
         if path != self.path:
@@ -259,7 +300,7 @@ def write_signal(path: Path, serial: int, sig: dict) -> None:
 
 
 def run_live(cfg: dict, duration: float | None, cfg_path: Path | None = None) -> None:
-    tailer = MetricsTailer(cfg["metrics_dir"])
+    tailer = MetricsTailer(cfg["metrics_dir"], cfg.get("metrics_stream", ""))
     det = OfiEpochDetector(cfg)
     signal_path = Path(cfg["signal_file"])
     if signal_path.is_file():
@@ -270,6 +311,7 @@ def run_live(cfg: dict, duration: float | None, cfg_path: Path | None = None) ->
             pass
     signal_path.parent.mkdir(parents=True, exist_ok=True)
     log.info("metrics dir : %s", cfg["metrics_dir"])
+    log.info("stream pin : %s (blank = auto sticky)", tailer.stream_pin or "(auto)")
     log.info("signal file : %s", signal_path)
     log.info("column      : %s", det.col)
     log.info("rule        : OFI epoch=%ds | SELL if epoch OFI < 0 | BUY if >= 0 | all previous triggers removed",

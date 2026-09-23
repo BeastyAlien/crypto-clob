@@ -8,7 +8,16 @@
       "args": ["${workspaceFolder}/supervise.py"],
       "options": { "cwd": "${workspaceFolder}" },
       "isBackground": true,
-      "group": { "kind": "build", "isDefault": true },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "NOBI: Bento gate (bento_gate.py)",
+      "type": "shell",
+      "command": "${workspaceFolder}/_runtime/python/python.exe",
+      "args": ["${workspaceFolder}/data_bento/bento_gate.py", "--print"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
       "problemMatcher": []
     },
     {
@@ -46,6 +55,22 @@
       "options": { "cwd": "${workspaceFolder}" },
       "isBackground": true,
       "problemMatcher": []
+    },
+    {
+      "label": "NOBI: START ALL (watchdog + bento gate)",
+      "type": "shell",
+      "command": "echo",
+      "args": ["NOBI: starting ALL (supervise.py + bento_gate.py)..."],
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "dependsOn": [
+        "NOBI: Watchdog (supervise.py)",
+        "NOBI: Bento gate (bento_gate.py)"
+      ],
+      "dependsOrder": "parallel",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "detail": "ONE-CLICK START: watchdog (supervise.py -> Bridge/Engine/UI/Brain) + DataBento gate. Ctrl+Shift+B."
     }
   ]
 }

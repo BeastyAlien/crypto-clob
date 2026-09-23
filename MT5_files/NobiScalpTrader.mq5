@@ -73,6 +73,14 @@ input double InpBEProfitPts  = 150.0;       // move SL to breakeven after this p
 input double InpTrailPts     = 120.0;      // trail SL this distance behind the price (points; 0 = only breakeven)
 input bool   InpReentryFast  = true;       // after TP/SL exit, re-enter immediately on the current signal (no wait for a new epoch serial)
 input int    InpReentryDelay = 30;         // seconds to wait after exit before the fast re-entry (0 = immediate)
+//--- DataBento futures confirmation gate (bento_gate.py output) ------+
+input string InpGateFile     = "nobi_gate.sig";  // Bento gate verdict file ("" = gate disabled)
+input bool   InpGateFailOpen = true;       // gate missing/stale/NODATA -> trade as before (true = fail open)
+input int    InpGateMaxWaitSec = 30;      // max seconds to wait for the gate verdict on a NEW serial (0 = no wait)
+//--- Order sounds: PlaySound jingles (files in <data folder>\MQL5\Files) ---
+input bool   InpPlaySound    = true;       // Play a sound when an order is opened
+input string InpSoundBuy     = "nobi_buy.wav";   // BUY sound file ("" = none)
+input string InpSoundSell    = "nobi_sell.wav";  // SELL sound file ("" = none)
 
 //--- constants -------------------------------------------------------+
 #define DIR_LONG  0                        // buy / long  (== ORDER_TYPE_BUY, POSITION_TYPE_BUY)
@@ -497,6 +505,9 @@ void OnTimer()
       return;
      }
 
+   if(!BentoGateAllows(serial, dir))
+      return;                            // DataBento futures gate says hold (no flip)
+
    ExecuteDirection(dir);
   }
 
@@ -600,6 +611,59 @@ string ReadSignalFile()
   }
 
 //--- reads the whole file as raw bytes and decodes them as UTF-8 -------+
+//--- DataBento futures confirmation gate (bento_gate.py) -------------+
+//| Verdict file (nobi_gate.sig) written by data_bento\bento_gate.py:  |
+//|   serial|bridge_SIDE|CONFIRM|BLOCK|HOLD|fut_OFI|fut_CVD|utc       |
+//| CONFIRM -> futures flow agrees -> trade as signalled.              |
+//| BLOCK   -> futures flow opposes -> HOLD (avoid the flip).          |
+//| HOLD/NODATA/missing gate -> InpGateFailOpen ? trade : hold.        |
+//+------------------------------------------------------------------+
+bool BentoGateAllows(const long serial, const int dir)
+  {
+   if(InpGateFile == "")
+      return(true);                              // gate disabled
+   int waitedMs = 0;
+   int maxWaitMs = (InpGateMaxWaitSec <= 0 ? 0 : InpGateMaxWaitSec * 1000);
+   bool waiting = true;
+   while(waiting)
+     {
+      string line = "";
+      ResetLastError();
+      int h = FileOpen(InpGateFile, FILE_READ | FILE_BIN | FILE_COMMON);
+      if(h == INVALID_HANDLE)
+        {
+         ResetLastError();
+         h = FileOpen(InpGateFile, FILE_READ | FILE_BIN);
+        }
+      if(h != INVALID_HANDLE)
+        {
+         line = ReadAllUtf8(h);
+         FileClose(h);
+        }
+      string parts[];
+      int    nf = StringSplit(line, '|', parts);
+      if(nf >= 3 && (long)StringToInteger(parts[0]) == serial)
+        {                                         // verdict for THIS serial
+         if(parts[2] == "CONFIRM")
+            return(true);                         // futures flow agrees -> trade
+         if(parts[2] == "NODATA")
+            return(InpGateFailOpen);              // gate has no data -> fail mode as configured
+         PrintFormat("Bento gate %s %s signal #%I64d (futures OFI/CVD %s) - holding current side",
+                     parts[2], (dir == DIR_LONG ? "BUY" : "SELL"), serial,
+                     (nf >= 5 ? parts[3] + "/" + parts[4] : "n/a"));
+         return(false);                           // BLOCK or HOLD -> no flip
+        }
+      // no verdict for this serial yet (stale file or gate not started)
+      if(line == "")
+         return(InpGateFailOpen);                 // gate never wrote anything -> fail mode as configured
+      if(waitedMs >= maxWaitMs)
+         break;                                   // gate still behind -> fail open below
+      Sleep(1000);                                // bounded wait: the gate fetches DataBento (takes seconds)
+      waitedMs += 1000;
+     }
+   return(InpGateFailOpen);                       // gate still behind after the wait -> fail mode as configured
+  }
+
 string ReadAllUtf8(const int h)
   {
    ResetLastError();
@@ -800,6 +864,12 @@ void OpenPosition(const int dir)
      }
    PrintFormat("OPEN %s %.2f @ %.5f sl=%.5f tp=%.5f",
                (dir == DIR_LONG ? "BUY" : "SELL"), g_vol, price, sl, tp);
+   if(InpPlaySound)
+     {
+      // ring the side jingle on a real fill - PlaySound is synchronous, keep clips short
+      string snd = (dir == DIR_LONG) ? InpSoundBuy : InpSoundSell;
+      if(snd != "" && FileIsExist(snd)) PlaySound(snd);
+     }
   }
 
 //+------------------------------------------------------------------+
